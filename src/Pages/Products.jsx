@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Card from "../fragments/Card";
 import Navbar from "../fragments/Navbar";
-import { use } from "react";
 
 const product = [
   {
@@ -38,6 +37,7 @@ const product = [
 function Products() {
   const [cart, setCart] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
+  const totalPriceRef = useRef();
 
   useEffect(() => {
     setCart(JSON.parse(localStorage.getItem("cart")) || []);
@@ -45,12 +45,19 @@ function Products() {
 
   useEffect(() => {
     if (cart.length > 0) {
+      // console.log(cart);
       const sum = cart.reduce((acc, item) => {
         const prods = product.find((prod) => prod.id === item.id);
         return acc + prods.price * item.qty;
       }, 0);
       setTotalPrice(sum);
       localStorage.setItem("cart", JSON.stringify(cart));
+    } else {
+      console.log(cart);
+      // totalPriceRef.current.innerHTML =
+      //   "<td colspan='3'>No Products Found Here</td>";
+      // totalPriceRef.current.style =
+      //   "font-weight: bold; text-align: center; color: gray; opacity: 0.5; height: 50px;";
     }
   }, [cart]);
 
@@ -105,7 +112,7 @@ function Products() {
                   </tr>
                 );
               })}
-              <tr className="border-t-gray-300 border">
+              <tr className="border-t-gray-300 border" ref={totalPriceRef}>
                 <td className="px-4 py-2" colSpan="2">
                   <b>Total Price</b>
                 </td>
