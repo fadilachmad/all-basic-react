@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Card from "../fragments/Card";
 import Navbar from "../fragments/Navbar";
+import { use } from "react";
 
 const product = [
   {
@@ -36,6 +37,22 @@ const product = [
 
 function Products() {
   const [cart, setCart] = useState([]);
+  const [totalPrice, setTotalPrice] = useState(0);
+
+  useEffect(() => {
+    setCart(JSON.parse(localStorage.getItem("cart")) || []);
+  }, []);
+
+  useEffect(() => {
+    if (cart.length > 0) {
+      const sum = cart.reduce((acc, item) => {
+        const prods = product.find((prod) => prod.id === item.id);
+        return acc + prods.price * item.qty;
+      }, 0);
+      setTotalPrice(sum);
+      localStorage.setItem("cart", JSON.stringify(cart));
+    }
+  }, [cart]);
 
   const handleClick = (title, id) => {
     if (cart.find((c) => c.id === id)) {
@@ -67,8 +84,8 @@ function Products() {
             <thead className="text-left">
               <tr>
                 <th className="px-4 py-2">Product</th>
-                <th className="px-4 py-2">Price</th>
                 <th className="px-4 py-2">Qty</th>
+                <th className="px-4 py-2">Price</th>
               </tr>
             </thead>
             <tbody className="text-left">
@@ -77,6 +94,7 @@ function Products() {
                 return (
                   <tr key={c.id} className="hover:bg-gray-50">
                     <td className=" px-4 py-2">{c.title}</td>
+                    <td className=" px-4 py-2 text-center">{c.qty}</td>
                     <td className=" px-4 py-2">
                       {item.price.toLocaleString("id-ID", {
                         style: "currency",
@@ -84,10 +102,23 @@ function Products() {
                         minimumFractionDigits: 0,
                       })}
                     </td>
-                    <td className=" px-4 py-2">{c.qty}</td>
                   </tr>
                 );
               })}
+              <tr className="border-t-gray-300 border">
+                <td className="px-4 py-2" colSpan="2">
+                  <b>Total Price</b>
+                </td>
+                <td className="px-4 py-2">
+                  <b>
+                    {totalPrice.toLocaleString("id-ID", {
+                      style: "currency",
+                      currency: "IDR",
+                      minimumFractionDigits: 0,
+                    })}
+                  </b>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
