@@ -45,19 +45,16 @@ function Products() {
 
   useEffect(() => {
     if (cart.length > 0) {
-      // console.log(cart);
+      // console.log(cart.length);
       const sum = cart.reduce((acc, item) => {
         const prods = product.find((prod) => prod.id === item.id);
         return acc + prods.price * item.qty;
       }, 0);
       setTotalPrice(sum);
       localStorage.setItem("cart", JSON.stringify(cart));
+      totalPriceRef.current.style.display = "table-row";
     } else {
-      console.log(cart);
-      // totalPriceRef.current.innerHTML =
-      //   "<td colspan='3'>No Products Found Here</td>";
-      // totalPriceRef.current.style =
-      //   "font-weight: bold; text-align: center; color: gray; opacity: 0.5; height: 50px;";
+      totalPriceRef.current.style.display = "none";
     }
   }, [cart]);
 
