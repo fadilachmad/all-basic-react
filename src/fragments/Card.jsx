@@ -16,7 +16,7 @@ function CardImage({ src }) {
   return (
     <div className="img-wrp h-56 overflow-hidden">
       <img
-        src={`img/${src}`}
+        src={src}
         alt=""
         className="w-full h-full object-cover object-center group-hover:scale-110 duration-500"
       />
@@ -28,14 +28,20 @@ function CardBody({ title, description, price, handleClick }) {
   return (
     <div className="body p-5">
       <div className="h-16">
-        <h1 className="text-xl font-bold">{title}</h1>
-        <p className="text-sm my-1">{description}</p>
+        <h1 className="text-xl font-bold">
+          {title.substring(0, 19)}
+          <span className="text-slate-200">...</span>
+        </h1>
+        <p className="text-sm my-1">
+          {description.substring(0, 55)}
+          <span className="text-slate-200">...</span>
+        </p>
       </div>
       <div className="footer text-lg font-semibold flex justify-between items-end mt-8 mb-2">
         <h2>
           {price.toLocaleString("id-ID", {
             style: "currency",
-            currency: "IDR",
+            currency: "USD",
             minimumFractionDigits: 0,
           })}
         </h2>

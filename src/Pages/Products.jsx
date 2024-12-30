@@ -1,53 +1,52 @@
 import { useEffect, useRef, useState } from "react";
 import Card from "../fragments/Card";
 import Navbar from "../fragments/Navbar";
-
-const product = [
-  {
-    id: 1,
-    title: "Air Jordan",
-    description: "Air jordan was a good sneakers wear for playing basketball",
-    price: 6300000,
-    src: "sneakers-1.png",
-  },
-  {
-    id: 2,
-    title: "Sneakey Shirt",
-    description:
-      "Shirt that comfort for your daily wear. Shirt that comfort for your daily wear ",
-    price: 1200000,
-    src: "shirt-1.jpg",
-  },
-  {
-    id: 3,
-    title: "Rombeng Shirt",
-    description: "Shirt that comfort for your daily lifestyle ",
-    price: 80000,
-    src: "shirt-1.jpg",
-  },
-  {
-    id: 4,
-    title: "Jordan XL",
-    description: "Jordan for playin football that comfort in your feet",
-    price: 2300000,
-    src: "sneakers-1.png",
-  },
-];
+import { getProduct } from "../services/product.service";
 
 function Products() {
   const [cart, setCart] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [product, setProduct] = useState([]);
   const totalPriceRef = useRef();
+  const API_URL = "https://api.escuelajs.co/api/v1/products?offset=0&limit=12";
 
   useEffect(() => {
-    setCart(JSON.parse(localStorage.getItem("cart")) || []);
+    const fetchData = async () => {
+      try {
+        // Ambil data dari localStorage
+        const cartData = JSON.parse(localStorage.getItem("cart")) || [];
+        setCart(cartData);
+
+        // Ambil data produk dari API
+        const data = await getProduct(API_URL);
+        const updatedProducts = data.map((item) => {
+          try {
+            const parsed = JSON.parse(item.images);
+            item.images = parsed; // Simpan hasil parsing ke item
+          } catch (error) {
+            if (Array.isArray(item.images)) {
+              console.log(item.images[0]);
+            } else {
+              console.log("Invalid images format");
+            }
+          }
+          return item; // Kembalikan item yang sudah diperbarui
+        });
+
+        setProduct(updatedProducts); // Perbarui state dengan array baru
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
   }, []);
 
   useEffect(() => {
     if (cart.length > 0) {
-      // console.log(cart.length);
       const sum = cart.reduce((acc, item) => {
         const prods = product.find((prod) => prod.id === item.id);
+        if (!prods) return acc; // Jika tidak ditemukan, lewati item ini
         return acc + prods.price * item.qty;
       }, 0);
       setTotalPrice(sum);
@@ -56,7 +55,7 @@ function Products() {
     } else {
       totalPriceRef.current.style.display = "none";
     }
-  }, [cart]);
+  }, [cart, product]);
 
   const handleClick = (title, id) => {
     if (cart.find((c) => c.id === id)) {
@@ -77,7 +76,7 @@ function Products() {
               title={p.title}
               description={p.description}
               price={p.price}
-              src={p.src}
+              src={p.images[0]}
               handleClick={() => handleClick(p.title, p.id)}
             />
           ))}
@@ -95,20 +94,22 @@ function Products() {
             <tbody className="text-left">
               {cart.map((c) => {
                 const item = product.find((item) => item.id === c.id);
+                if (!item) return null; // Jika item tidak ditemukan, jangan render baris
                 return (
                   <tr key={c.id} className="hover:bg-gray-50">
-                    <td className=" px-4 py-2">{c.title}</td>
+                    <td className=" px-4 py-2 ">{c.title}</td>
                     <td className=" px-4 py-2 text-center">{c.qty}</td>
                     <td className=" px-4 py-2">
                       {item.price.toLocaleString("id-ID", {
                         style: "currency",
-                        currency: "IDR",
+                        currency: "USD",
                         minimumFractionDigits: 0,
                       })}
                     </td>
                   </tr>
                 );
               })}
+
               <tr className="border-t-gray-300 border" ref={totalPriceRef}>
                 <td className="px-4 py-2" colSpan="2">
                   <b>Total Price</b>
@@ -117,7 +118,7 @@ function Products() {
                   <b>
                     {totalPrice.toLocaleString("id-ID", {
                       style: "currency",
-                      currency: "IDR",
+                      currency: "USD",
                       minimumFractionDigits: 0,
                     })}
                   </b>
